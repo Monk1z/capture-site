@@ -9,17 +9,25 @@ module.exports = async (req, res) => {
   // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // Check if the body is correctly parsed (on Vercel, it should be parsed automatically)
-      if (!req.body) {
+      // If the body is not automatically parsed, we parse it manually
+      let body = req.body;
+
+      // If no body is received, return an error
+      if (!body) {
         console.log('No body received');
         return res.status(400).json({ success: false, message: 'No body received' });
       }
 
-      // Log the entire request body to see the data structure
-      console.log('Request Body:', req.body);
+      // If Vercel doesn't parse JSON automatically, we can manually parse it
+      if (typeof body === 'string') {
+        body = JSON.parse(body);  // Parse the JSON string if needed
+      }
 
-      // Extract photo from the body (ensure it is sent as base64 string)
-      let photo = req.body.photo;
+      // Log the entire request body to verify what is received
+      console.log('Request Body:', body);
+
+      // Extract photo from the body
+      let photo = body.photo;
 
       // If no photo is received, send an error response
       if (!photo) {
@@ -36,7 +44,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      // Set up email options with the base64 image as attachment
+      // Set up email options with the base64 image as an attachment
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
