@@ -10,20 +10,21 @@ module.exports = async (req, res) => {
   if (req.method === 'POST') {
     const { photo } = req.body;
 
-    // Check if photo data is present
+    // Log to see if photo data is received
+    console.log('Received photo data:', photo);
+
+    // Check if photo data is provided
     if (!photo) {
+      console.log('No photo data received');
       return res.status(400).json({ success: false, message: 'No photo data received' });
     }
 
-    // Log to help identify if photo data is received
-    console.log('Received photo data:', photo);
-
-    // Set up the transporter for Nodemailer
+    // Set up the transporter for sending the email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'aleksadiscord1@gmail.com',
-        pass: 'vamr kaxm pltr ifsf', // Use app password here
+        pass: 'vamr kaxm pltr ifsf', // Make sure to use your app password here
       },
     });
 
@@ -42,16 +43,16 @@ module.exports = async (req, res) => {
       ],
     };
 
-    // Send the email and handle success or failure
+    // Send the email
     try {
       await transporter.sendMail(mailOptions);
       res.status(200).json({ success: true, message: 'Photo sent successfully!' });
     } catch (error) {
-      console.error('Error sending email:', error);
-      res.status(500).json({ success: false, message: 'Error sending email', error: error.message });
+      console.error('Error sending email:', error);  // Log the error for further debugging
+      return res.status(500).json({ success: false, message: 'Error sending email', error: error.message });
     }
   } else {
-    // Handle non-POST requests
+    // Return 405 if the method is not POST
     res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 };
