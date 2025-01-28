@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,16 +9,17 @@ module.exports = async (req, res) => {
   // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // Log the entire request body to see what data is being sent
+      // Check if the body is correctly parsed (on Vercel, it should be parsed automatically)
+      if (!req.body) {
+        console.log('No body received');
+        return res.status(400).json({ success: false, message: 'No body received' });
+      }
+
+      // Log the entire request body to see the data structure
       console.log('Request Body:', req.body);
 
-      // Parse the body and extract photo
-      let photo = null;
-
-      // Vercel will automatically parse JSON request bodies into req.body if the header is set
-      if (req.headers['content-type'] === 'application/json') {
-        photo = req.body.photo;
-      }
+      // Extract photo from the body (ensure it is sent as base64 string)
+      let photo = req.body.photo;
 
       // If no photo is received, send an error response
       if (!photo) {
@@ -34,7 +36,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      // Set up email options
+      // Set up email options with the base64 image as attachment
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
@@ -43,7 +45,7 @@ module.exports = async (req, res) => {
         attachments: [
           {
             filename: 'photo.jpg',
-            content: photo.split(';base64,')[1],  // Remove the base64 prefix
+            content: photo.split(';base64,')[1],  // Remove the base64 prefix to get pure base64 content
             encoding: 'base64',
           },
         ],
