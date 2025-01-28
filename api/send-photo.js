@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+	const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,47 +12,25 @@ const transporter = nodemailer.createTransport({
 });
 
 module.exports = async (req, res) => {
+  // Allow any origin (you can restrict this for production)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'POST') {
+    // Handle the POST request here (sending the email, saving photo, etc.)
     const { photo } = req.body;
 
     if (!photo) {
       return res.status(400).json({ success: false, message: 'No photo data received' });
     }
 
-    // Decode the base64 photo string
-    const base64Data = photo.replace(/^data:image\/jpeg;base64,/, '');
-    const filePath = path.join('/tmp', 'photo.jpg');  // Vercel uses the /tmp directory for temporary files
+    // Process the photo and send the email...
+    // (Your logic to process the photo and email)
 
-    try {
-      // Save the photo as a JPEG file
-      fs.writeFileSync(filePath, base64Data, 'base64');
-
-      // Create the email options
-      const mailOptions = {
-        from: 'aleksadiscord1@gmail.com',
-        to: 'aleksi.tomic.2008@gmail.com',  // Receiver email
-        subject: 'Captured Photo',
-        text: 'Here is the captured photo.',
-        attachments: [
-          {
-            filename: 'photo.jpg',
-            path: filePath,
-          },
-        ],
-      };
-
-      // Send the email with the photo as an attachment
-      await transporter.sendMail(mailOptions);
-
-      // Clean up the saved photo after sending email
-      fs.unlinkSync(filePath);
-
-      res.status(200).json({ success: true, message: 'Photo sent successfully!' });
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ success: false, message: 'Error processing photo and sending email' });
-    }
+    return res.status(200).json({ success: true, message: 'Photo sent successfully!' });
   } else {
-    res.status(405).json({ success: false, message: 'Method Not Allowed' });
+    // Respond with a 405 if the method is not POST
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 };

@@ -55,24 +55,25 @@
 
       console.log('Sending photo data to the server:', payload);
 
-      fetch('/api/send-photo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json', // Ensure the correct header
-        },
-        body: JSON.stringify(payload), // Stringify the JSON object
-      })
-      .then(response => response.json())  // Ensure the response is parsed as JSON
-      .then(data => {
-        if (data.success) {
-          alert('Photo sent successfully!');
-        } else {
-          alert('Failed to send photo.');
-        }
-      })
-      .catch(err => {
-        alert('Error sending photo: ' + err);
-      });
+      fetch('/send-photo', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_AUTH_TOKEN', // Add authorization token
+  },
+  body: JSON.stringify({ photo: photoData }), // Send the base64 encoded photo
+})
+.then(response => response.json())
+.then(data => {
+  if (data.success) {
+    alert('Photo sent successfully!');
+  } else {
+    alert('Failed to send photo.');
+  }
+})
+.catch(err => {
+  alert('Error: ' + err);
+});
     }
   </script>
 </body>
