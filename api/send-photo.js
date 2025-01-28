@@ -11,10 +11,15 @@ module.exports = async (req, res) => {
       // Log the entire request body to see what data is being sent
       console.log('Request Body:', req.body);
 
-      // Destructure photo from the request body
-      const { photo } = req.body; 
+      // Parse the body and extract photo
+      let photo = null;
 
-      // Check if photo is received
+      // Vercel will automatically parse JSON request bodies into req.body if the header is set
+      if (req.headers['content-type'] === 'application/json') {
+        photo = req.body.photo;
+      }
+
+      // If no photo is received, send an error response
       if (!photo) {
         console.log('No photo data received');
         return res.status(400).json({ success: false, message: 'No photo data received' });
