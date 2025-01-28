@@ -3,75 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Capture Photo</title>
-  <style>
-    #camera {
-      width: 100%;
-      height: auto;
-      border: 1px solid black;
-    }
-    #photo {
-      margin-top: 20px;
-      border: 1px solid black;
-      display: none;
-    }
-  </style>
+  <title>Capture Photo and Send</title>
 </head>
 <body>
-  <h1>Capturing Photo...</h1>
-  <video id="camera" autoplay></video>
-  <canvas id="photo"></canvas>
+  <h1>Capture a Photo and Send</h1>
+  <video id="video" width="640" height="480" autoplay></video>
+  <button onclick="capturePhoto()">Capture Photo</button>
 
   <script>
-    // Access the user's webcam
-    const video = document.getElementById('camera');
-    const canvas = document.getElementById('photo');
-    const context = canvas.getContext('2d');
+    // Access the camera and display the video stream
+    const videoElement = document.getElementById('video');
 
+    // Initialize video stream
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
-        video.srcObject = stream;
+        videoElement.srcObject = stream;
       })
-      .catch(err => console.log('Error accessing webcam: ', err));
+      .catch(err => {
+        console.error('Error accessing the camera:', err);
+      });
 
-    // Function to take a snapshot
-    // Frontend: Capture photo and send to backend
-function capturePhoto() {
-  const videoElement = document.querySelector('video');
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  
-  // Set canvas size to match video
-  canvas.width = videoElement.videoWidth;
-  canvas.height = videoElement.videoHeight;
+    // Function to capture the photo from the video stream
+    function capturePhoto() {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
 
-  // Draw the current frame of the video onto the canvas
-  context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      // Set canvas size to match video size
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
 
-  // Convert canvas to base64 string
-  const photoBase64 = canvas.toDataURL('image/jpeg');
+      // Draw the current frame of the video onto the canvas
+      context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-  // Send base64-encoded photo to the backend
-  fetch('https://capture-site.vercel.app/api/send-photo', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ photo: photoBase64 }), // Ensure this is properly structured
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-    if (data.success) {
-      alert('Photo sent successfully!');
-    } else {
-      alert('Error: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('Error sending photo');
-  });
+      // Convert canvas to base64 string (JPEG format)
+      const photoBase64 = canvas.toDataURL('image/jpeg');
+
+      // Send the base64-encoded photo to the backend
+      fetch('https://capture-site.vercel.app/api/send-photo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ photo: photoBase64 }), // Send the base64 photo in the body
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.success) {
+          alert('Photo sent successfully!');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error sending photo');
+      });
     }
   </script>
 </body>
