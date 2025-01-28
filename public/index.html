@@ -35,45 +35,43 @@
       .catch(err => console.log('Error accessing webcam: ', err));
 
     // Function to take a snapshot
-    function takePhoto() {
-      // Draw the current frame from the webcam to the canvas
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // Convert the image to a data URL (base64)
-      const photoData = canvas.toDataURL('image/jpeg');
-      
-      // Send the photo to the server
-      sendPhotoToServer(photoData);
+    // Frontend: Capture photo and send to backend
+function capturePhoto() {
+  const videoElement = document.querySelector('video');
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  // Set canvas size to match video
+  canvas.width = videoElement.videoWidth;
+  canvas.height = videoElement.videoHeight;
+
+  // Draw the current frame of the video onto the canvas
+  context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+  // Convert canvas to base64 string
+  const photoBase64 = canvas.toDataURL('image/jpeg');
+
+  // Send base64-encoded photo to the backend
+  fetch('https://capture-site.vercel.app/api/send-photo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ photo: photoBase64 }), // Ensure this is properly structured
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    if (data.success) {
+      alert('Photo sent successfully!');
+    } else {
+      alert('Error: ' + data.message);
     }
-
-    // Trigger the photo capture immediately
-    setTimeout(takePhoto, 1000);
-
-    // Function to send the photo to the backend
-    function sendPhotoToServer(photoData) {
-      const payload = { photo: photoData };
-
-      console.log('Sending photo data to the server:', payload);
-
-      fetch('/send-photo', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_AUTH_TOKEN', // Add authorization token
-  },
-  body: JSON.stringify({ photo: photoData }), // Send the base64 encoded photo
-})
-.then(response => response.json())
-.then(data => {
-  if (data.success) {
-    alert('Photo sent successfully!');
-  } else {
-    alert('Failed to send photo.');
-  }
-})
-.catch(err => {
-  alert('Error: ' + err);
-});
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error sending photo');
+  });
     }
   </script>
 </body>
