@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       service: 'gmail',
       auth: {
         user: 'aleksadiscord1@gmail.com',
-        pass: 'your-app-password', // Use app password here
+        pass: 'vamr kaxm pltr ifsf', // Use app password here
       },
     });
 
