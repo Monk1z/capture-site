@@ -1,32 +1,31 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
-  // Set headers for CORS (optional, for development)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Check if the method is POST
+  // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // Parse the JSON body manually (if Vercel doesn't do this automatically)
-      let body = req.body;
+      // Log the entire request body to see what data is being sent
+      console.log('Request Body:', req.body);
 
-      // Check if body is a string, and parse it
-      if (typeof body === 'string') {
-        body = JSON.parse(body);
+      // Parse the body and extract photo
+      let photo = null;
+
+      // Vercel will automatically parse JSON request bodies into req.body if the header is set
+      if (req.headers['content-type'] === 'application/json') {
+        photo = req.body.photo;
       }
 
-      // Extract 'photo' from the body
-      const { photo } = body;
-
-      // Check if 'photo' is undefined or empty
+      // If no photo is received, send an error response
       if (!photo) {
         console.log('No photo data received');
         return res.status(400).json({ success: false, message: 'No photo data received' });
       }
 
-      // Set up the email transporter (using Gmail)
+      // Set up the transporter for sending the email
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -35,7 +34,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      // Set up the email content with the base64-encoded photo
+      // Set up email options
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
@@ -44,7 +43,7 @@ module.exports = async (req, res) => {
         attachments: [
           {
             filename: 'photo.jpg',
-            content: photo.split(';base64,')[1],  // Extract the base64 content, removing the prefix
+            content: photo.split(';base64,')[1],  // Remove the base64 prefix
             encoding: 'base64',
           },
         ],
@@ -61,6 +60,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
   } else {
+    // Handle non-POST requests
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 };
