@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
-  // Allow all origins (you can restrict this to your frontend domain later)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,12 +8,10 @@ module.exports = async (req, res) => {
   // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // Parse the JSON body using req.json() for Vercel functions
-      const body = await req.json();  // This is the correct way to parse the body in Vercel
+      // Accessing the request body directly (no need to use req.json())
+      const { photo } = req.body; // Destructure photo from the request body
 
-      console.log('Received data:', body);  // Log the data to see what you're getting
-
-      const { photo } = body; // Destructure photo from the request body
+      console.log('Received data:', req.body);  // Log the data to check what we receive
 
       // Check if the photo data is received
       if (!photo) {
@@ -46,8 +43,11 @@ module.exports = async (req, res) => {
         ],
       };
 
+      console.log('Sending email...');  // Log before sending the email
+
       // Send the email
       await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully');  // Log after email is sent
       return res.status(200).json({ success: true, message: 'Photo sent successfully!' });
     } catch (error) {
       console.error('Error processing request:', error);  // Log the error
