@@ -6,19 +6,27 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Ensure the request is POST
+  // Check if the method is POST
   if (req.method === 'POST') {
     try {
-      // Parse the incoming request body as JSON
-      const { photo } = req.body;
+      // Parse the JSON body manually (if Vercel doesn't do this automatically)
+      let body = req.body;
 
-      // Check if 'photo' exists in the body
+      // Check if body is a string, and parse it
+      if (typeof body === 'string') {
+        body = JSON.parse(body);
+      }
+
+      // Extract 'photo' from the body
+      const { photo } = body;
+
+      // Check if 'photo' is undefined or empty
       if (!photo) {
         console.log('No photo data received');
         return res.status(400).json({ success: false, message: 'No photo data received' });
       }
 
-      // Set up the email transporter (using Gmail in this case)
+      // Set up the email transporter (using Gmail)
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -27,7 +35,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      // Set up the email content
+      // Set up the email content with the base64-encoded photo
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
@@ -36,7 +44,7 @@ module.exports = async (req, res) => {
         attachments: [
           {
             filename: 'photo.jpg',
-            content: photo.split(';base64,')[1],  // Strip out the base64 metadata (before the comma)
+            content: photo.split(';base64,')[1],  // Extract the base64 content, removing the prefix
             encoding: 'base64',
           },
         ],
