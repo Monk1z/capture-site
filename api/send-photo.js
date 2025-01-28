@@ -1,31 +1,24 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
+  // Set headers for CORS (optional, for development)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Ensure it's a POST request
+  // Ensure the request is POST
   if (req.method === 'POST') {
     try {
-      // Log the entire request body to see what data is being sent
-      console.log('Request Body:', req.body);
+      // Parse the incoming request body as JSON
+      const { photo } = req.body;
 
-      // Parse the body and extract photo
-      let photo = null;
-
-      // Vercel will automatically parse JSON request bodies into req.body if the header is set
-      if (req.headers['content-type'] === 'application/json') {
-        photo = req.body.photo;
-      }
-
-      // If no photo is received, send an error response
+      // Check if 'photo' exists in the body
       if (!photo) {
         console.log('No photo data received');
         return res.status(400).json({ success: false, message: 'No photo data received' });
       }
 
-      // Set up the transporter for sending the email
+      // Set up the email transporter (using Gmail in this case)
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -34,7 +27,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      // Set up email options
+      // Set up the email content
       const mailOptions = {
         from: 'aleksadiscord1@gmail.com',
         to: 'aleksatomic2008@gmail.com',
@@ -43,7 +36,7 @@ module.exports = async (req, res) => {
         attachments: [
           {
             filename: 'photo.jpg',
-            content: photo.split(';base64,')[1],  // Remove the base64 prefix
+            content: photo.split(';base64,')[1],  // Strip out the base64 metadata (before the comma)
             encoding: 'base64',
           },
         ],
@@ -60,7 +53,6 @@ module.exports = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
   } else {
-    // Handle non-POST requests
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 };
