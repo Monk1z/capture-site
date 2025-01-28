@@ -40,6 +40,7 @@
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+
             // Convert to base64
             photoBase64 = canvas.toDataURL('image/jpeg');
             console.log('Captured Photo:', photoBase64); // Log for debugging
