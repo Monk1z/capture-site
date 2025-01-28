@@ -8,12 +8,13 @@ module.exports = async (req, res) => {
   // Ensure it's a POST request
   if (req.method === 'POST') {
     try {
-      // Accessing the request body directly (no need to use req.json())
-      const { photo } = req.body; // Destructure photo from the request body
+      // Log the entire request body to see what data is being sent
+      console.log('Request Body:', req.body);
 
-      console.log('Received data:', req.body);  // Log the data to check what we receive
+      // Destructure photo from the request body
+      const { photo } = req.body; 
 
-      // Check if the photo data is received
+      // Check if photo is received
       if (!photo) {
         console.log('No photo data received');
         return res.status(400).json({ success: false, message: 'No photo data received' });
@@ -37,20 +38,20 @@ module.exports = async (req, res) => {
         attachments: [
           {
             filename: 'photo.jpg',
-            content: photo.split(';base64,')[1], // Extract the base64 content after the data URL prefix
+            content: photo.split(';base64,')[1],  // Remove the base64 prefix
             encoding: 'base64',
           },
         ],
       };
 
-      console.log('Sending email...');  // Log before sending the email
+      console.log('Sending email...');
 
       // Send the email
       await transporter.sendMail(mailOptions);
-      console.log('Email sent successfully');  // Log after email is sent
+      console.log('Email sent successfully');
       return res.status(200).json({ success: true, message: 'Photo sent successfully!' });
     } catch (error) {
-      console.error('Error processing request:', error);  // Log the error
+      console.error('Error processing request:', error);
       return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
   } else {
